@@ -3,8 +3,9 @@ import dotenv from "dotenv";
 import { db } from "./config/db";
 import bcrypt from "bcrypt";
 import { modelUser } from "./model/userModel";
-import mongoose from "mongoose";
+import jwt from 'jsonwebtoken'
 
+const MY_SECRET = 'Moiskjdn65'
 const app = express();
 app.use(express.json());
 dotenv.config();
@@ -39,7 +40,12 @@ app.post("/user/login", async (req, res) => {
     if (!passwordValidaton) {
         throw new Error("Password is incorret please try again");
     }
-    res.send("you are loggedin");
+    if (user) {
+      const token = await jwt.sign({id: user._id}, MY_SECRET, {expiresIn: '7D'})
+      res.json({
+        token
+      });
+    }
   } catch (error) {
     res.status(400).send("Error: " + error);
   }
