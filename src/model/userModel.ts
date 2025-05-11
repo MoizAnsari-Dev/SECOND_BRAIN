@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import JWT from "jsonwebtoken";
-import validator from 'validator'
+import validator from "validator";
 
 const userSchema = new mongoose.Schema(
   {
@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      
     },
     password: {
       type: String,
@@ -33,15 +32,14 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-userSchema.methods.getJWT = async function () {
-  const user = this;
-  const token = await JWT.sign({ _id: user._id }, "moiz@321", {
-    expiresIn: "7D",
-  });
-  return token;
-};
-
 const modelUser = mongoose.model("User", userSchema);
 
-export { modelUser };
+const ContainSchema = new mongoose.Schema({
+  title: String,
+  link: String,
+  tags: [{ type: mongoose.Types.ObjectId, ref: "Tag" }],
+  userID: { type: mongoose.Types.ObjectId, ref: "user", required: true },
+});
+const ContainModel = mongoose.model("Contain", ContainSchema);
+
+export { modelUser, ContainModel };

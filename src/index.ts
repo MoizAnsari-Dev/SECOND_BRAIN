@@ -1,13 +1,16 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { db } from "./config/db";
 import bcrypt from "bcrypt";
-import { modelUser } from "./model/userModel";
-import jwt from 'jsonwebtoken'
+import { ContainModel, modelUser } from "./model/userModel";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+import { MY_SECRET } from "./config/config";
+import { middleware } from "./middleware/middleware";
 
-const MY_SECRET = 'Moiskjdn65'
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 dotenv.config();
 
 app.post("/user/signup", async (req, res) => {
@@ -31,27 +34,38 @@ app.post("/user/signup", async (req, res) => {
 });
 app.post("/user/login", async (req, res) => {
   try {
-    const {email, password} = req.body;
-    const user = await modelUser.findOne({email: email});
+    const { email, password } = req.body;
+    const user = await modelUser.findOne({ email: email });
     if (!user) {
-        throw new Error("Email can not found");
+      throw new Error("Email can not found");
     }
     const passwordValidaton = await bcrypt.compare(password, user.password);
     if (!passwordValidaton) {
-        throw new Error("Password is incorret please try again");
+      throw new Error("Password is incorret please try again");
     }
     if (user) {
-      const token = await jwt.sign({id: user._id}, MY_SECRET, {expiresIn: '7D'})
+      const token = await jwt.sign({ id: user._id }, MY_SECRET, {
+        expiresIn: "7D",
+      });
       res.json({
-        token
+        token,
       });
     }
   } catch (error) {
     res.status(400).send("Error: " + error);
   }
 });
-app.get("/user/contain", (req, res) => {
+app.post("/user/contain", middleware, async (req: Request, res: Response) => {
   try {
+    const { link, tags, title, userID } = req.body;
+    const containDataCreate = new ContainModel({
+      link,
+      tags,
+      title,
+      //@ts-ignore
+      userID: req.userId
+    })
+    await containDataCreate.save();
     res.send("Comming from Contains");
   } catch (error) {
     res.status(400).send("Error: " + error);
@@ -65,11 +79,10 @@ app.delete("/user/containdelete", (req, res) => {
   }
 });
 
-app.get('/demo', (req, res) => {
+app.get("/demo", (req, res) => {
   console.log(req.headers);
-  res.send('Check the console for headers');
+  res.send("Check the console for headers");
 });
-
 
 app.listen(3000, async () => {
   await db();
