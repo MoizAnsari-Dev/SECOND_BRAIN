@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import JWT from "jsonwebtoken";
-import validator from "validator";
 
 const userSchema = new mongoose.Schema(
   {
