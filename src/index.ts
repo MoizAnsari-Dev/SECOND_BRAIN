@@ -71,9 +71,31 @@ app.post("/user/contain", middleware, async (req: Request, res: Response) => {
     res.status(400).send("Error: " + error);
   }
 });
-app.delete("/user/containdelete", (req, res) => {
+app.get("/user/loadContain", middleware, async (req, res) => {
+  //@ts-ignore
+  const userID = req.userId
+  
+  const contain = await ContainModel.find({
+    //@ts-ignore
+    userId: req.userID
+  }).populate("userID", ["firstName", "lastName"])
+  console.log(contain);
+  res.json({
+    contain
+  })
+})
+app.delete("/user/containdelete",  middleware, async (req, res) => {
   try {
-    res.send("Comming from delete Contains");
+    //@ts-ignore
+    const containId = req.userId
+    await ContainModel.deleteMany({
+      containId, 
+      //@ts-ignore
+      userid: req.userID
+    })
+    res.json({
+      message: 'deleted'
+    })
   } catch (error) {
     res.status(400).send("Error: " + error);
   }
