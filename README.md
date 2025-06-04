@@ -1,3 +1,3 @@
 # SECOND_BRAIN
 
-This is incomplete 
+This is incomplete project 
